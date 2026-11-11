@@ -1,7 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 
 export async function createClient() {
+  // Supabase auth reads the current time while validating sessions.
+  // Wait for the request first so Cache Components does not prerender it.
+  await connection();
   const cookieStore = await cookies();
 
   return createServerClient(

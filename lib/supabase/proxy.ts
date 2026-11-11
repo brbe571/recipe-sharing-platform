@@ -34,7 +34,25 @@ export async function updateSession(request: NextRequest) {
 
   // Refresh the auth token. Do not put logic between createServerClient and
   // getClaims() — that can cause random logouts.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
+  const pathname = request.nextUrl.pathname;
+
+  if (
+    !user &&
+    (pathname.startsWith("/dashboard") || pathname.startsWith("/recipes/new"))
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  if (user && (pathname.startsWith("/login") || pathname.startsWith("/signup"))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 }
