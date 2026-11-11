@@ -3,8 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { AppHeader } from "@/components/app-header";
 import { RecipeCard } from "@/components/recipe-card";
-import { SignOutButton } from "@/components/sign-out-button";
 import type { RecipeListItem } from "@/lib/recipes";
 import { createClient } from "@/lib/supabase/server";
 
@@ -49,22 +49,7 @@ async function DashboardContent() {
 
   return (
     <>
-      <header className="border-b border-[#e6dccb]">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-5 py-4">
-          <Link href="/dashboard" className="text-lg font-semibold tracking-tight">
-            Recipe Share
-          </Link>
-          <nav aria-label="Primary" className="flex items-center gap-5 text-sm">
-            <Link
-              href="/recipes/new"
-              className="inline-flex h-9 items-center rounded-full bg-[#9a3412] px-4 text-sm font-medium text-white hover:bg-[#7c2a0e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a3412]"
-            >
-              New recipe
-            </Link>
-            <SignOutButton />
-          </nav>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-5 py-10 sm:py-14">
         <p className="text-sm font-medium tracking-wide text-[#9a3412]">
