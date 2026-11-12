@@ -4,7 +4,17 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/app-header";
-import { getAuthorName, type RecipeDetail } from "@/lib/recipes";
+import { DeleteRecipeButton } from "@/components/delete-recipe-button";
+import { GuestHeader } from "@/components/guest-header";
+import { RecipeDetailSkeleton } from "@/components/loading-skeletons";
+import { RecipeComments } from "@/components/recipe-comments";
+import { RecipeLikeButton } from "@/components/recipe-like-button";
+import {
+  getAuthorName,
+  RECIPE_DETAIL_SELECT,
+  type RecipeDetail,
+} from "@/lib/recipes";
+import { COMMENT_LIST_SELECT, type RecipeComment } from "@/lib/social";
 import { createClient } from "@/lib/supabase/server";
 
 interface RecipePageProps {
@@ -38,43 +48,48 @@ async function RecipeDetailContent({ id }: { id: string }) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
+  const recipeResult = await supabase
     .from("recipes")
-    .select(
-      "id, title, ingredients, instructions, cooking_time, difficulty, category, created_at, user_id, profiles(username, full_name)",
-    )
+    .select(RECIPE_DETAIL_SELECT)
     .eq("id", id)
     .maybeSingle();
 
-  if (error || !data) {
+  if (recipeResult.error || !recipeResult.data) {
     notFound();
   }
 
-  const recipe = data as RecipeDetail;
+  const recipe = recipeResult.data as RecipeDetail;
+
+  const [likesCountResult, likedByUserResult, commentsResult] =
+    await Promise.all([
+      supabase
+        .from("recipe_likes")
+        .select("*", { count: "exact", head: true })
+        .eq("recipe_id", id),
+      user
+        ? supabase
+            .from("recipe_likes")
+            .select("recipe_id")
+            .eq("recipe_id", id)
+            .eq("user_id", user.id)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null }),
+      supabase
+        .from("recipe_comments")
+        .select(COMMENT_LIST_SELECT)
+        .eq("recipe_id", id)
+        .order("created_at", { ascending: true }),
+    ]);
+
+  const likeCount = likesCountResult.count ?? 0;
+  const likedByCurrentUser = Boolean(likedByUserResult.data);
+  const comments = (commentsResult.data ?? []) as RecipeComment[];
   const author = getAuthorName(recipe.profiles);
   const isOwner = user?.id === recipe.user_id;
 
   return (
     <>
-      {user ? (
-        <AppHeader />
-      ) : (
-        <header className="border-b border-[#e6dccb]">
-          <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-5 py-4">
-            <Link href="/" className="text-lg font-semibold tracking-tight">
-              Recipe Share
-            </Link>
-            <nav aria-label="Primary" className="flex items-center gap-5 text-sm">
-              <Link
-                href="/login"
-                className="rounded-sm text-[#5c5348] underline-offset-4 hover:text-[#1f1a14] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a3412]"
-              >
-                Log in
-              </Link>
-            </nav>
-          </div>
-        </header>
-      )}
+      {user ? <AppHeader /> : <GuestHeader />}
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:py-14">
         <p className="text-xs font-medium tracking-wide text-[#9a3412] uppercase">
@@ -93,6 +108,29 @@ async function RecipeDetailContent({ id }: { id: string }) {
           <span className="sr-only">, </span>
           {recipe.difficulty}
         </p>
+
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <RecipeLikeButton
+            recipeId={recipe.id}
+            likeCount={likeCount}
+            likedByCurrentUser={likedByCurrentUser}
+            isAuthenticated={Boolean(user)}
+          />
+          {isOwner ? (
+            <>
+              <Link
+                href={`/recipes/${recipe.id}/edit`}
+                className="inline-flex h-10 items-center rounded-full bg-[#9a3412] px-4 text-sm font-medium text-white hover:bg-[#7c2a0e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a3412]"
+              >
+                Edit recipe
+              </Link>
+              <DeleteRecipeButton
+                recipeId={recipe.id}
+                recipeTitle={recipe.title}
+              />
+            </>
+          ) : null}
+        </div>
 
         <section className="mt-10" aria-labelledby="ingredients-heading">
           <h2
@@ -117,6 +155,12 @@ async function RecipeDetailContent({ id }: { id: string }) {
             {recipe.instructions}
           </p>
         </section>
+
+        <RecipeComments
+          recipeId={recipe.id}
+          comments={comments}
+          currentUserId={user?.id ?? null}
+        />
       </main>
     </>
   );
@@ -127,13 +171,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-[#f6f1e8] font-sans text-[#1f1a14]">
-      <Suspense
-        fallback={
-          <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:py-14">
-            <p className="text-sm text-[#5c5348]">Loading recipe...</p>
-          </main>
-        }
-      >
+      <Suspense fallback={<RecipeDetailSkeleton />}>
         <RecipeDetailContent id={id} />
       </Suspense>
     </div>

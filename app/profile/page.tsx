@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/app-header";
+import { ProfileSkeleton } from "@/components/loading-skeletons";
 import { ProfileForm } from "@/components/profile-form";
 import { createClient } from "@/lib/supabase/server";
 
@@ -82,13 +83,7 @@ async function ProfileContent() {
 export default function ProfilePage() {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-[#f6f1e8] font-sans text-[#1f1a14]">
-      <Suspense
-        fallback={
-          <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:py-14">
-            <p className="text-sm text-[#5c5348]">Loading profile...</p>
-          </main>
-        }
-      >
+      <Suspense fallback={<ProfileSkeleton />}>
         <ProfileContent />
       </Suspense>
     </div>

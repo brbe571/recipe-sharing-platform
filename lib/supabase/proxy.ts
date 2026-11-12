@@ -42,7 +42,8 @@ export async function updateSession(request: NextRequest) {
     !user &&
     (pathname.startsWith("/dashboard") ||
       pathname.startsWith("/recipes/new") ||
-      pathname.startsWith("/profile"))
+      pathname.startsWith("/profile") ||
+      /^\/recipes\/[^/]+\/edit$/.test(pathname))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

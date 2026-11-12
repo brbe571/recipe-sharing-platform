@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { AuthForm } from "@/components/auth-form";
+import { AuthFormSkeleton } from "@/components/loading-skeletons";
 
 export const metadata: Metadata = {
   title: "Log in · Recipe Share",
@@ -26,7 +27,7 @@ export default function LoginPage() {
       </header>
 
       <main className="mx-auto flex w-full max-w-5xl flex-1 items-start px-5 py-16 sm:py-24">
-        <Suspense fallback={<p className="text-sm text-[#5c5348]">Loading form...</p>}>
+        <Suspense fallback={<AuthFormSkeleton />}>
           <AuthForm mode="login" />
         </Suspense>
       </main>

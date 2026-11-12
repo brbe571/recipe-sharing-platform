@@ -9,6 +9,14 @@ interface AuthFormProps {
   mode: "login" | "signup";
 }
 
+function getSafeNextPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return value;
+}
+
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -64,16 +72,17 @@ export function AuthForm({ mode }: AuthFormProps) {
           return;
         }
 
-        router.push("/dashboard");
+        router.push(getSafeNextPath(searchParams.get("next")));
         router.refresh();
         return;
       }
 
+      const nextPath = getSafeNextPath(searchParams.get("next"));
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
         },
       });
 
@@ -83,7 +92,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
 
       if (data.session) {
-        router.push("/dashboard");
+        router.push(nextPath);
         router.refresh();
         return;
       }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/app-header";
+import { RecipeFormSkeleton } from "@/components/loading-skeletons";
 import { RecipeForm } from "@/components/recipe-form";
 import { createClient } from "@/lib/supabase/server";
 
@@ -47,13 +48,7 @@ async function NewRecipeContent() {
 export default function NewRecipePage() {
   return (
     <div className="flex min-h-full flex-1 flex-col bg-[#f6f1e8] font-sans text-[#1f1a14]">
-      <Suspense
-        fallback={
-          <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:py-14">
-            <p className="text-sm text-[#5c5348]">Loading form...</p>
-          </main>
-        }
-      >
+      <Suspense fallback={<RecipeFormSkeleton />}>
         <NewRecipeContent />
       </Suspense>
     </div>

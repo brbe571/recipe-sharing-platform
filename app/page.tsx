@@ -11,6 +11,12 @@ export default function Home() {
           </a>
           <nav aria-label="Primary" className="flex items-center gap-5 text-sm">
             <a
+              href="/recipes"
+              className="rounded-sm text-[#5c5348] underline-offset-4 hover:text-[#1f1a14] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a3412]"
+            >
+              Recipes
+            </a>
+            <a
               href="/login"
               className="rounded-sm text-[#5c5348] underline-offset-4 hover:text-[#1f1a14] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a3412]"
             >
@@ -46,10 +52,10 @@ export default function Home() {
               Start creating
             </a>
             <a
-              href="/login"
+              href="/recipes"
               className="text-sm font-medium text-[#5c5348] underline-offset-4 hover:text-[#1f1a14] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a3412]"
             >
-              Log in
+              Browse recipes
             </a>
           </div>
         </section>

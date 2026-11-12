@@ -36,6 +36,13 @@ export interface RecipeDetail extends RecipeListItem {
   instructions: string;
 }
 
+/** Disambiguate author embed — likes/comments also link recipes ↔ profiles. */
+export const RECIPE_LIST_SELECT =
+  "id, title, cooking_time, difficulty, category, created_at, user_id, profiles!recipes_user_id_fkey(username, full_name)" as const;
+
+export const RECIPE_DETAIL_SELECT =
+  "id, title, cooking_time, difficulty, category, created_at, user_id, ingredients, instructions, profiles!recipes_user_id_fkey(username, full_name)" as const;
+
 export function getAuthorName(
   profiles: ProfileSummary | ProfileSummary[] | null | undefined,
 ) {
@@ -49,4 +56,33 @@ export function isRecipeDifficulty(value: string): value is RecipeDifficulty {
 
 export function isRecipeCategory(value: string): value is RecipeCategory {
   return RECIPE_CATEGORIES.includes(value as RecipeCategory);
+}
+
+export function normalizeRecipeSearchQuery(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (!raw) {
+    return "";
+  }
+
+  return raw.trim().replace(/\s+/g, " ").slice(0, 80);
+}
+
+/** PostgREST `.or()` filter for case-insensitive recipe text search. */
+export function buildRecipeSearchOrFilter(query: string) {
+  const term = normalizeRecipeSearchQuery(query)
+    .replace(/[%_,."()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!term) {
+    return null;
+  }
+
+  const pattern = `%${term}%`;
+  return [
+    `title.ilike."${pattern}"`,
+    `category.ilike."${pattern}"`,
+    `difficulty.ilike."${pattern}"`,
+    `ingredients.ilike."${pattern}"`,
+  ].join(",");
 }

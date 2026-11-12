@@ -14,6 +14,18 @@ export function AppHeader({ showNewRecipe = true }: AppHeaderProps) {
         </Link>
         <nav aria-label="Primary" className="flex items-center gap-5 text-sm">
           <Link
+            href="/dashboard"
+            className="rounded-sm text-[#5c5348] underline-offset-4 hover:text-[#1f1a14] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a3412]"
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/recipes"
+            className="rounded-sm text-[#5c5348] underline-offset-4 hover:text-[#1f1a14] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a3412]"
+          >
+            Recipes
+          </Link>
+          <Link
             href="/profile"
             className="rounded-sm text-[#5c5348] underline-offset-4 hover:text-[#1f1a14] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a3412]"
           >
